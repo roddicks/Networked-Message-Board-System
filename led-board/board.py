@@ -37,7 +37,7 @@ def onMessage(ws, message):
 	print("received")
 	updated = True
 	global messages 
-	
+	#dump messages
 	data = json.loads(message)
 	for m in data:
 		messages.append(m)
