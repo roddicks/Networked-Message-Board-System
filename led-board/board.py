@@ -1,6 +1,6 @@
 #Main message board controller
 import websocket
-import thread
+import threading
 import Queue
 import time
 import logging
@@ -8,16 +8,27 @@ import json
 
 logging.basicConfig()
 
-messages = Queue.Queue()
-messages.put("message1")
-messages.put("message2")
+#Define Threading class
+class MyThread(threading.Thread):
+	def __init__(self, tID, name, queue):
+		threading.Thread.__init__(self)
+		self.tID = tID
+		self.name = name
+		self.queue = queue
+	def run(self):
+		printMessages(messages)
+		
+		
+#Global variables
+messages = ["message1", "message2"]
 alert_message_buffer = Queue.Queue(3)
 updated = False
 
+
 #Print messages
 def printMessages(messageArr):
+	global updated
 	updated = False
-	
 	for m in messageArr:
 		print(m)
 		time.sleep(1)
@@ -28,6 +39,7 @@ def printMessages(messageArr):
 	if not updated:
 		printMessages(messageArr)
 	else:
+		print("messages were updated")
 		global messages
 		printMessages(messages)
 		
@@ -35,24 +47,23 @@ def printMessages(messageArr):
 #Websocket callbacks
 def onMessage(ws, message):
 	print("received")
+	global updated
 	updated = True
 	global messages 
-	#dump messages
+	messages = []
 	data = json.loads(message)
 	for m in data:
 		messages.append(m)
-
 def onError(ws, error):
 	print(error)
-	
 def onClose(ws):
 	print("Connection closed")
-	
 def onOpen(ws):
 	print("Connection opened")
 	time.sleep(3)
 	ws.send("[\"hello\", \"world\"]")
-
+	
+	
 #Create websocket
 SERVER_ADDRESS = 'messageboard.fuzzlesoft.ca'
 SERVER_PORT = 9011
@@ -63,6 +74,9 @@ ws = websocket.WebSocketApp(str,
 	on_close = onClose)
 ws.on_open = onOpen
 
+
 #Create message thread
-thread.start_new_thread(printMessages, (messages,))
+messageThread = MyThread(1, "msgThread", alert_message_buffer)
+messageThread.start()
+
 ws.run_forever()
