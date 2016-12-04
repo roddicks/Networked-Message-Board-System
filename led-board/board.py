@@ -34,8 +34,4 @@ def printMessages(messages):
 	if not updated
 		printMessages(messages)
 	
-	return
 		
-
-
-
