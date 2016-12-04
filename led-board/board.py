@@ -1,37 +1,65 @@
 #Main message board controller
-import Queue
 import Client
 import time
-from twisted.internet import reactor
-from autobahn.twisted.websocket import WebSocketClientFactory
+import websocket
+import Queue
+import logging
+import json
 
-messages = ["message 1", "message 2"];
+logging.basicConfig()
+
+messages = ["message1", "message2"]
+alert_message_buffer = Queue.Queue(3)
+
 updated = False
-alert_message_buffer = Queue.Queue(3)	#Limit to 3 alert messages
+
+#Print messages
+def printMessages(messageArr):
+	updated = False
+	
+	for m in messageArr:
+		print(m)
+		time.sleep(1)
+	
+	if len(messageArr) == 0:
+		time.sleep(1)
+	
+	if not updated:
+		printMessages(messageArr)
+	else:
+		global messages
+		printMessages(messages)
+		
+		
+#Websocket callbacks
+def onMessage(ws, message):
+	print("received")
+	updated = True
+	global messages 
+	messages = []
+	data = json.loads(message)
+	for m in data:
+		messages.append(m)
+
+def onError(ws, error):
+	print(error)
+	
+def onClose(ws):
+	print("Connection closed")
+	
+def onOpen(ws):
+	print("Connection opened")
+	time.sleep(3)
+	ws.send("[\"hello\", \"world\"]")
 
 SERVER_ADDRESS = 'messageboard.fuzzlesoft.ca'
 SERVER_PORT = 9011
+str = 'ws://' + SERVER_ADDRESS + ":" + str(SERVER_PORT)
 
-#Setup
-
-#Subscribe to message board server
-factory = WebSocketClientFactory(SERVER_ADDRESS + ":" + SERVER_PORT)
-protocol = Client.Client(onMessagesReceived)
-factory.protocol = protocol
-
-reactor.connectTCP(SERVER_ADDRESS, SERVER_PORT, factory)
-reactor.run()
-
-#Set up message board
-def onMessagesReceived(payload):
-	print payload
-
-def printMessages(messages):
-	for(m in messages):
-		print m
-		time.sleep(0.25)
-	
-	if not updated
-		printMessages(messages)
-	
-		
+ws = websocket.WebSocketApp(str,
+							on_message = onMessage,
+							on_error = onError,
+							on_close = onClose)
+ws.on_open = onOpen
+ws.run_forever()
+printMessages(messages)
