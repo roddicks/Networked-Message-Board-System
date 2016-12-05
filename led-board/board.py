@@ -5,6 +5,8 @@ import Queue
 import time
 import logging
 import json
+import PPMUtil
+from subprocess import call
 
 logging.basicConfig()
 
@@ -16,44 +18,58 @@ class MyThread(threading.Thread):
 		self.name = name
 		self.queue = queue
 	def run(self):
-		printMessages(messages)
+		while True:
+			printMessages(self.queue)
 		
 		
 #Global variables
-messages = ["message1", "message2"]
+messageQueue = Queue.Queue()
+messageQueue.put({"_type":"MESSAGE", "msg":"mymessageA"})
+messageQueue.put({"_type":"MESSAGE", "msg":"mymessageB"})
+messageQueue.put({"_type":"ALERT", "msg":"alertmessage"})
 alert_message_buffer = Queue.Queue(3)
 updated = False
 
 
 #Print messages
-def printMessages(messageArr):
+def printMessages(messageQueue):
 	global updated
-	updated = False
-	for m in messageArr:
-		print(m)
+	update_triggered = False
+	for m in iter(messageQueue.get, None):
+		msg = m['msg']
+		PPMUtil.text_to_ppm(msg + ".ppm", msg)	#Digest message
+		#call(["./demo", "-D", "1", m + ".ppm"])
+		
+		#Put regular messages back in queue
+		if not updated and m['_type'] != 'ALERT':
+			messageQueue.put(m)
+		
+		#Prepare to break from queue
+		if updated and not update_triggered:
+			messageQueue.put(None)
+			update_triggered = True
+		
+		messageQueue.task_done()
 		time.sleep(1)
-	
-	if len(messageArr) == 0:
-		time.sleep(1)
-	
-	if not updated:
-		printMessages(messageArr)
-	else:
-		print("messages were updated")
-		global messages
-		printMessages(messages)
+		
 		
 		
 #Websocket callbacks
 def onMessage(ws, message):
 	print("received")
-	global updated
-	updated = True
-	global messages 
-	messages = []
-	data = json.loads(message)
-	for m in data:
-		messages.append(m)
+	
+	payload = json.loads(message)
+	type = payload['_type']
+	data = payload['data']
+	
+	global messageQueue
+	if type == 'ALERT':
+		messageQueue.put({'_type':type, 'msg':data})
+	else:
+		global updated
+		updated = True
+		for m in data:
+			messageQueue.put({'_type':type, 'msg':m})
 def onError(ws, error):
 	print(error)
 def onClose(ws):
@@ -61,7 +77,7 @@ def onClose(ws):
 def onOpen(ws):
 	print("Connection opened")
 	time.sleep(3)
-	ws.send("[\"hello\", \"world\"]")
+	ws.send("")
 	
 	
 #Create websocket
@@ -76,7 +92,7 @@ ws.on_open = onOpen
 
 
 #Create message thread
-messageThread = MyThread(1, "msgThread", alert_message_buffer)
+messageThread = MyThread(1, "msgThread", messageQueue)
 messageThread.start()
 
 ws.run_forever()

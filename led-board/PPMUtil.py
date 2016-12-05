@@ -61,5 +61,3 @@ def ppm_char_dict(c):
 	}
 	#Just retrieve the pixel definition bytes, no headers
 	return chars.get(c).readlines()[3]
-	
-text_to_ppm("test.ppm", "penis")
