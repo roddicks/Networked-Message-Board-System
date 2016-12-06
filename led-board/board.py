@@ -7,7 +7,7 @@ import logging
 import json
 import PPMUtil
 import WatchdogEventHandler
-from subprocess import call
+import subprocess
 import datetime
 
 logging.basicConfig()
@@ -33,7 +33,7 @@ class MotionThread(threading.Thread):
 		self.handler = handler
 	def run(self):
 		observer = WatchdogEventHandler.observer
-		observer.schedule(self.handler, "E:\message-board\Networked-Message-Board-System\led-board", recursive=True)
+		observer.schedule(self.handler, "/tmp/motion/", recursive=True)
 		observer.start()
 		try:
 			while True:
@@ -42,6 +42,7 @@ class MotionThread(threading.Thread):
 			observer.stop()
 		observer.join()
 		
+		
 #Global variables
 messageQueue = Queue.Queue()
 messageQueue.put({"_type":"MESSAGE", "msg":"mymessageA"})
@@ -49,6 +50,7 @@ messageQueue.put({"_type":"MESSAGE", "msg":"mymessageB"})
 messageQueue.put({"_type":"ALERT", "msg":"alertmessage"})
 alert_message_buffer = Queue.Queue(3)
 updated = False
+brightness = 50
 
 
 #Print messages
@@ -58,7 +60,10 @@ def printMessages(messageQueue):
 	for m in iter(messageQueue.get, None):
 		msg = m['msg']
 		PPMUtil.text_to_ppm(msg + ".ppm", msg)	#Digest message
-		#call(["./demo", "-D", "1", m + ".ppm"])
+		try:
+			subprocess.call(["/home/pi/board-test/rpi-rgb-led-matrix/examples-api-use/demo", "-t 10", "-D 1", "--led-brightness=" + str(brightness), "--led-rows=16", msg + ".ppm"])
+		except Exception:
+			pass
 		
 		#Put regular messages back in queue
 		if not updated and m['_type'] != 'ALERT':
@@ -70,7 +75,6 @@ def printMessages(messageQueue):
 			update_triggered = True
 		
 		messageQueue.task_done()
-		time.sleep(1)
 		
 		
 		
