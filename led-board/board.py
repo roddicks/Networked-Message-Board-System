@@ -62,7 +62,7 @@ def printMessages(messageQueue):
 		msg = m['msg']
 		PPMUtil.text_to_ppm(msg + ".ppm", msg)	#Digest message
 		try:
-			os.system("sudo ~/board-test/rpi-rgb-led-matrix/example-api-use/demo -t 10 -D 1 --led-brightness=" + str(brightness) + " --led-rows=16 " + msg + ".ppm")
+			os.system("sudo $HOME/board-test/rpi-rgb-led-matrix/example-api-use/demo -t 10 -D 1 --led-brightness=" + str(brightness) + " --led-rows=16 " + msg + ".ppm")
 		except Exception:
 			pass
 		time.sleep(10)
