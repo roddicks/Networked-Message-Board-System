@@ -7,8 +7,7 @@ import logging
 import json
 import PPMUtil
 import WatchdogEventHandler
-from subprocess import call
-import os
+import subprocess
 import datetime
 
 logging.basicConfig()
@@ -62,7 +61,7 @@ def printMessages(messageQueue):
 		msg = m['msg']
 		PPMUtil.text_to_ppm(msg + ".ppm", msg)	#Digest message
 		try:
-			os.system("sudo $HOME/board-test/rpi-rgb-led-matrix/example-api-use/demo -t 10 -D 1 --led-brightness=" + str(brightness) + " --led-rows=16 " + msg + ".ppm")
+			subprocess.run(["sudo ~/board-test/rpi-rgb-led-matrix/example-api-use/demo -t 10 -D 1 --led-brightness=" + str(brightness) + " --led-rows=16 " + msg + ".ppm"], shell=True)
 		except Exception:
 			pass
 		time.sleep(10)
