@@ -5,6 +5,7 @@ def text_to_ppm(filename, text):
 	chars = []
 	for c in text:
 		chars.append(ppm_char_dict(c))
+	chars.append(ppm_char_dict(' ')
 	
 	#Write characters
 	file = open(filename, 'w+b')
