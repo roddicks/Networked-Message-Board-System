@@ -8,6 +8,7 @@ import json
 import PPMUtil
 import WatchdogEventHandler
 from subprocess import call
+import datetime
 
 logging.basicConfig()
 
@@ -89,6 +90,9 @@ def onMessage(ws, message):
 		updated = True
 		for m in data:
 			messageQueue.put({'_type':type, 'msg':m})
+		time = datetime.datetime.now().isoformat()
+		count = str(len(data))
+		ws.send("{\"_type\":\"MESSAGE_COUNT\", \"date\":\"" + time + "Z\", \"value\":" + count + ", \"device\":\"MESSAGE_BOARD\"}")
 def onError(ws, error):
 	print(error)
 def onClose(ws):
@@ -96,14 +100,13 @@ def onClose(ws):
 def onOpen(ws):
 	print("Connection opened")
 	time.sleep(3)
-	ws.send("")
 	
 	
 #Create websocket
 SERVER_ADDRESS = 'messageboard.fuzzlesoft.ca'
 SERVER_PORT = 9011
-str = 'ws://' + SERVER_ADDRESS + ":" + str(SERVER_PORT)
-ws = websocket.WebSocketApp(str,
+s = 'ws://' + SERVER_ADDRESS + ":" + str(SERVER_PORT)
+ws = websocket.WebSocketApp(s,
 	on_message = onMessage,
 	on_error = onError,
 	on_close = onClose)
