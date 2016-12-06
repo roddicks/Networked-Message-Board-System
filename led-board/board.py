@@ -42,6 +42,7 @@ class MotionThread(threading.Thread):
 			observer.stop()
 		observer.join()
 		
+		
 #Global variables
 messageQueue = Queue.Queue()
 messageQueue.put({"_type":"MESSAGE", "msg":"mymessageA"})
@@ -49,6 +50,7 @@ messageQueue.put({"_type":"MESSAGE", "msg":"mymessageB"})
 messageQueue.put({"_type":"ALERT", "msg":"alertmessage"})
 alert_message_buffer = Queue.Queue(3)
 updated = False
+brightness = 50
 
 
 #Print messages
@@ -58,7 +60,8 @@ def printMessages(messageQueue):
 	for m in iter(messageQueue.get, None):
 		msg = m['msg']
 		PPMUtil.text_to_ppm(msg + ".ppm", msg)	#Digest message
-		#call(["./demo", "-D", "1", m + ".ppm"])
+		call(["./demo", "-t", "3", "-D", "1", msg + ".ppm"])
+		time.sleep(3)
 		
 		#Put regular messages back in queue
 		if not updated and m['_type'] != 'ALERT':
@@ -70,7 +73,6 @@ def printMessages(messageQueue):
 			update_triggered = True
 		
 		messageQueue.task_done()
-		time.sleep(1)
 		
 		
 		
