@@ -10,7 +10,7 @@ class WatchdogEventHandler(FileSystemEventHandler):
 	def on_created(self, event):
 		time = datetime.datetime.now().isoformat()
 		try:
-			self.ws.send("{\"_type\":\"MOTION\", \"date\":\"" + time + "Z\", \"value\":123, \"device\":\"MESSAGE_BOARD\"}")
+			self.ws.send("{\"_type\":\"MOTION\", \"date\":\"" + time + "Z\", \"value\":1, \"device\":\"MESSAGE_BOARD\"}")
 		except WebSocketConnectionClosedException:
 			pass
 		
