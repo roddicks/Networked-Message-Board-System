@@ -61,7 +61,7 @@ def printMessages(messageQueue):
 		msg = m['msg']
 		PPMUtil.text_to_ppm(msg + ".ppm", msg)	#Digest message
 		try:
-			call(["./demo", "-t", "3", "-D", 1", msg + ".ppm"])
+			call(["./demo", "-t", "3", "-D", "1", msg + ".ppm"])
 		except Exception:
 			pass
 		time.sleep(3)
