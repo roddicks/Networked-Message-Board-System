@@ -31,8 +31,9 @@ def write_ppm(file, bytes):
 			file.write(b'\xFF\xFF\xFF')	#single space between letters
 	
 def ppm_char_dict(c):
-	chars = {
-		' ': open('font/space.ppm', 'rb')
-	}
+	if c.isspace():
+		result = open('font/space.ppm', 'rb')
+	else:
+		result = open('font/' + c + '.ppm', 'rb')
 	#Just retrieve the pixel definition bytes, no headers
-	return chars.get(c, open('font/' + c + '.ppm', 'rb')).readlines()[3]
+	return result.readlines()[3]
