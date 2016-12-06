@@ -61,10 +61,10 @@ def printMessages(messageQueue):
 		msg = m['msg']
 		PPMUtil.text_to_ppm(msg + ".ppm", msg)	#Digest message
 		try:
-			call(["~/board-test/rpi-rgb-led-matrix/example-api-use/demo", "-t", "3", "-D", "1", msg + ".ppm"])
+			call(["sudo ~/board-test/rpi-rgb-led-matrix/example-api-use/demo", "-t", "10", "-D", "1", "--led-brightness=" + str(brightness), "--led-rows=16", msg + ".ppm"])
 		except Exception:
 			pass
-		time.sleep(3)
+		time.sleep(10)
 		
 		#Put regular messages back in queue
 		if not updated and m['_type'] != 'ALERT':
