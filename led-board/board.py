@@ -25,15 +25,14 @@ class MessageBoardThread(threading.Thread):
 		
 #Define Motion Detection Threading class
 class MotionThread(threading.Thread):
-	def __init__(self, tID, name, ws, handler):
-		threading.Thread.__init(self)
+	def __init__(self, tID, name, handler):
+		threading.Thread.__init__(self)
 		self.tID = tID
 		self.name = name
-		self.ws = ws
 		self.handler = handler
 	def run(self):
 		observer = WatchdogEventHandler.observer
-		observer.schedule(self.handler, "PATH", recursive=True)
+		observer.schedule(self.handler, "E:\message-board\Networked-Message-Board-System\led-board", recursive=True)
 		observer.start()
 		try:
 			while True:
@@ -112,8 +111,8 @@ ws.on_open = onOpen
 
 
 #Create motion thread
-handler = WatchdogEventHandler.WatchdogEventHandler()
-motionThread = MotionThread(1, "motionThread", ws, handler)
+handler = WatchdogEventHandler.WatchdogEventHandler(ws)
+motionThread = MotionThread(1, "motionThread", handler)
 motionThread.start()
 
 #Create message thread

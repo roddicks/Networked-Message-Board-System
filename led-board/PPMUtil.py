@@ -33,7 +33,6 @@ def write_ppm(file, bytes):
 def ppm_char_dict(c):
 	chars = {
 		' ': open('font/space.ppm', 'rb')
-		default: open('font/' + c + '.ppm', 'rb')
 	}
 	#Just retrieve the pixel definition bytes, no headers
-	return chars.get(c).readlines()[3]
+	return chars.get(c, open('font/' + c + '.ppm', 'rb')).readlines()[3]
