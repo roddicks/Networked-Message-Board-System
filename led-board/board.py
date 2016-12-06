@@ -6,12 +6,13 @@ import time
 import logging
 import json
 import PPMUtil
+import WatchdogEventHandler
 from subprocess import call
 
 logging.basicConfig()
 
-#Define Threading class
-class MyThread(threading.Thread):
+#Define Message Board Threading class
+class MessageBoardThread(threading.Thread):
 	def __init__(self, tID, name, queue):
 		threading.Thread.__init__(self)
 		self.tID = tID
@@ -21,6 +22,25 @@ class MyThread(threading.Thread):
 		while True:
 			printMessages(self.queue)
 		
+		
+#Define Motion Detection Threading class
+class MotionThread(threading.Thread):
+	def __init__(self, tID, name, ws, handler):
+		threading.Thread.__init(self)
+		self.tID = tID
+		self.name = name
+		self.ws = ws
+		self.handler = handler
+	def run(self):
+		observer = WatchdogEventHandler.observer
+		observer.schedule(self.handler, "PATH", recursive=True)
+		observer.start()
+		try:
+			while True:
+				time.sleep(1)
+		except KeyboardInterrupt:
+			observer.stop()
+		observer.join()
 		
 #Global variables
 messageQueue = Queue.Queue()
@@ -91,8 +111,13 @@ ws = websocket.WebSocketApp(str,
 ws.on_open = onOpen
 
 
+#Create motion thread
+handler = WatchdogEventHandler.WatchdogEventHandler()
+motionThread = MotionThread(1, "motionThread", ws, handler)
+motionThread.start()
+
 #Create message thread
-messageThread = MyThread(1, "msgThread", messageQueue)
+messageThread = MessageBoardThread(2, "messageThread", messageQueue)
 messageThread.start()
 
 ws.run_forever()
