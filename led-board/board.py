@@ -33,7 +33,7 @@ class MotionThread(threading.Thread):
 		self.handler = handler
 	def run(self):
 		observer = WatchdogEventHandler.observer
-		observer.schedule(self.handler, "/home/pi/message-board-client/Networked-Message-Board-System/led-board", recursive=True)
+		observer.schedule(self.handler, "/tmp/motion/", recursive=True)
 		observer.start()
 		try:
 			while True:
