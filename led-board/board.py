@@ -60,7 +60,10 @@ def printMessages(messageQueue):
 	for m in iter(messageQueue.get, None):
 		msg = m['msg']
 		PPMUtil.text_to_ppm(msg + ".ppm", msg)	#Digest message
-		call(["./demo", "-t", "3", "-D", "1", msg + ".ppm"])
+		try:
+			call(["./demo", "-t", "3", "-D", 1", msg + ".ppm"])
+		except Exception:
+			pass
 		time.sleep(3)
 		
 		#Put regular messages back in queue
