@@ -46,7 +46,9 @@ class MotionThread(threading.Thread):
 #Global variables
 messageQueue = Queue.Queue()
 updated = False
-brightness = 50
+high_brightness = 50
+low_brightness = 10
+lastMotion = time.time()
 
 
 #Print messages
@@ -66,7 +68,7 @@ def printMessages(messageQueue):
 		if not updated:
 			PPMUtil.text_to_ppm(msg + ".ppm", msg)	#Digest message
 			try:
-				subprocess.call(["/home/pi/board-test/rpi-rgb-led-matrix/examples-api-use/demo", "-t 10", "-D 1", "--led-brightness=" + str(brightness), "--led-rows=16", msg + ".ppm"])
+				subprocess.call(["/home/pi/board-test/rpi-rgb-led-matrix/examples-api-use/demo", "-t 10", "-D 1", "--led-brightness=" + str(high_brightness) if time.time() - lastMotion < 60 else low_brightness, "--led-rows=16", msg + ".ppm"])
 			except Exception:
 				pass
 				
@@ -79,7 +81,6 @@ def printMessages(messageQueue):
 			update_triggered = True
 		
 		messageQueue.task_done()
-	time.sleep(0.5)
 		
 		
 #Websocket callbacks
@@ -111,6 +112,11 @@ def onOpen(ws):
 	print("Connection opened")
 	
 	
+
+#Motion callback
+def motion_callback(timestamp):
+	lastMotion = timestamp
+	
 #Create websocket
 SERVER_ADDRESS = 'messageboard.fuzzlesoft.ca'
 SERVER_PORT = 9011
@@ -123,7 +129,7 @@ ws.on_open = onOpen
 
 
 #Create motion thread
-handler = WatchdogEventHandler.WatchdogEventHandler(ws)
+handler = WatchdogEventHandler.WatchdogEventHandler(ws, motion_callback)
 motionThread = MotionThread(1, "motionThread", handler)
 motionThread.start()
 
