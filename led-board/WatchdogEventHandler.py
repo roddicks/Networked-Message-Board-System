@@ -10,11 +10,11 @@ class WatchdogEventHandler(FileSystemEventHandler):
 		self.ws = ws
 		self.callback = callback
 	def on_created(self, event):
-		time = datetime.datetime.now().isoformat()
+		self.callback(time.time())
+		borktime = datetime.datetime.now().isoformat()
 		try:
-			self.ws.send("{\"_type\":\"MOTION\", \"date\":\"" + time + "Z\", \"value\":1, \"device\":\"MESSAGE_BOARD\"}")
+			self.ws.send("{\"_type\":\"MOTION\", \"date\":\"" + borktime + "Z\", \"value\":1, \"device\":\"MESSAGE_BOARD\"}")
 		except WebSocketConnectionClosedException:
 			pass
 			
-		self.callback(time.time())
 observer = Observer()

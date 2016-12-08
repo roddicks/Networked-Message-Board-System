@@ -68,7 +68,7 @@ def printMessages(messageQueue):
 		if not updated:
 			PPMUtil.text_to_ppm(msg + ".ppm", msg)	#Digest message
 			try:
-				subprocess.call(["/home/pi/board-test/rpi-rgb-led-matrix/examples-api-use/demo", "-t 10", "-D 1", "--led-brightness=" + str(high_brightness) if time.time() - lastMotion < 60 else low_brightness, "--led-rows=16", msg + ".ppm"])
+				subprocess.call(["/home/pi/board-test/rpi-rgb-led-matrix/examples-api-use/demo", "-t 10", "-D 1", "--led-brightness=" + (str(high_brightness) if time.time() - lastMotion < 30 else str(low_brightness)), "--led-rows=16", msg + ".ppm"])
 			except Exception:
 				pass
 				
@@ -115,6 +115,7 @@ def onOpen(ws):
 
 #Motion callback
 def motion_callback(timestamp):
+	global lastMotion
 	lastMotion = timestamp
 	
 #Create websocket
