@@ -70,7 +70,7 @@ def printMessages(messageQueue):
 			except Exception:
 				pass
 				
-			if m['_type'] != 'ALERT':
+			if m['_type'] != 'ALERT' and not updated:
 				messageQueue.put(m)
 		
 		#Prepare to break from queue
@@ -95,12 +95,14 @@ def onMessage(ws, message):
 	else:
 		global updated
 		updated = True
+		while updated:
+			time.sleep(0.25)
 		for m in data:
 			messageQueue.put({'msg':m, '_type':type})
 		#Send message count to server
-		time = datetime.datetime.now().isoformat()
+		ayy = datetime.datetime.now().isoformat()
 		count = str(len(data))
-		ws.send("{\"_type\":\"MESSAGE_COUNT\", \"date\":\"" + time + "Z\", \"value\":" + count + ", \"device\":\"MESSAGE_BOARD\"}")
+		ws.send("{\"_type\":\"MESSAGE_COUNT\", \"date\":\"" + ayy + "Z\", \"value\":" + count + ", \"device\":\"MESSAGE_BOARD\"}")
 def onError(ws, error):
 	print(error)
 def onClose(ws):
