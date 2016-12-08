@@ -61,15 +61,17 @@ def printMessages(messageQueue):
 	for m in iter(messageQueue.get, None):
 		msg = m['msg']
 		print(msg)
-		PPMUtil.text_to_ppm(msg + ".ppm", msg)	#Digest message
-		try:
-			subprocess.call(["/home/pi/board-test/rpi-rgb-led-matrix/examples-api-use/demo", "-t 10", "-D 1", "--led-brightness=" + str(brightness), "--led-rows=16", msg + ".ppm"])
-		except Exception:
-			pass
 		
 		#Put regular messages back in queue
-		if not updated and m['_type'] != 'ALERT':
-			messageQueue.put(m)
+		if not updated:
+			PPMUtil.text_to_ppm(msg + ".ppm", msg)	#Digest message
+			try:
+				subprocess.call(["/home/pi/board-test/rpi-rgb-led-matrix/examples-api-use/demo", "-t 10", "-D 1", "--led-brightness=" + str(brightness), "--led-rows=16", msg + ".ppm"])
+			except Exception:
+				pass
+				
+			if m['_type'] != 'ALERT'
+				messageQueue.put(m)
 		
 		#Prepare to break from queue
 		if updated and not update_triggered:
