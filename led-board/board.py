@@ -53,14 +53,12 @@ brightness = 50
 def printMessages(messageQueue):
 	global updated
 	updated = False
-	print(updated)
 	update_triggered = False
 	
 	if messageQueue.empty():
 		messageQueue.put(None)
 	
 	for m in iter(messageQueue.get, None):
-		print(m)
 		msg = m['msg']
 		print(msg)
 		PPMUtil.text_to_ppm(msg + ".ppm", msg)	#Digest message
@@ -79,8 +77,7 @@ def printMessages(messageQueue):
 			update_triggered = True
 		
 		messageQueue.task_done()
-	print("Done queue iteration in printMessages")
-		
+	time.sleep(0.5)
 		
 		
 #Websocket callbacks
@@ -90,13 +87,11 @@ def onMessage(ws, message):
 	payload = json.loads(message)
 	type = payload['_type']
 	data = payload['data']
-	print(data)
 	global messageQueue
 	if type == 'ALERT':
 		messageQueue.put({'msg':data, '_type':type})
 	else:
 		global updated
-		global time
 		updated = True
 		for m in data:
 			messageQueue.put({'msg':m, '_type':type})
