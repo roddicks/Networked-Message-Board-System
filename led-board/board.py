@@ -33,7 +33,7 @@ class MotionThread(threading.Thread):
 		self.handler = handler
 	def run(self):
 		observer = WatchdogEventHandler.observer
-		observer.schedule(self.handler, "/tmp/motion/", recursive=True)
+		observer.schedule(self.handler, "/home/pi/motion-snapshots/", recursive=True)
 		observer.start()
 		try:
 			while True:
@@ -45,10 +45,6 @@ class MotionThread(threading.Thread):
 		
 #Global variables
 messageQueue = Queue.Queue()
-messageQueue.put({"_type":"MESSAGE", "msg":"mymessageA"})
-messageQueue.put({"_type":"MESSAGE", "msg":"mymessageB"})
-messageQueue.put({"_type":"ALERT", "msg":"alertmessage"})
-alert_message_buffer = Queue.Queue(3)
 updated = False
 brightness = 50
 
@@ -56,9 +52,17 @@ brightness = 50
 #Print messages
 def printMessages(messageQueue):
 	global updated
+	updated = False
+	print(updated)
 	update_triggered = False
+	
+	if messageQueue.empty():
+		messageQueue.put(None)
+	
 	for m in iter(messageQueue.get, None):
+		print(m)
 		msg = m['msg']
+		print(msg)
 		PPMUtil.text_to_ppm(msg + ".ppm", msg)	#Digest message
 		try:
 			subprocess.call(["/home/pi/board-test/rpi-rgb-led-matrix/examples-api-use/demo", "-t 10", "-D 1", "--led-brightness=" + str(brightness), "--led-rows=16", msg + ".ppm"])
@@ -75,6 +79,7 @@ def printMessages(messageQueue):
 			update_triggered = True
 		
 		messageQueue.task_done()
+	print("Done queue iteration in printMessages")
 		
 		
 		
@@ -85,15 +90,17 @@ def onMessage(ws, message):
 	payload = json.loads(message)
 	type = payload['_type']
 	data = payload['data']
-	
+	print(data)
 	global messageQueue
 	if type == 'ALERT':
-		messageQueue.put({'_type':type, 'msg':data})
+		messageQueue.put({'msg':data, '_type':type})
 	else:
 		global updated
+		global time
 		updated = True
 		for m in data:
-			messageQueue.put({'_type':type, 'msg':m})
+			messageQueue.put({'msg':m, '_type':type})
+		#Send message count to server
 		time = datetime.datetime.now().isoformat()
 		count = str(len(data))
 		ws.send("{\"_type\":\"MESSAGE_COUNT\", \"date\":\"" + time + "Z\", \"value\":" + count + ", \"device\":\"MESSAGE_BOARD\"}")
@@ -103,7 +110,6 @@ def onClose(ws):
 	print("Connection closed")
 def onOpen(ws):
 	print("Connection opened")
-	time.sleep(3)
 	
 	
 #Create websocket
@@ -125,5 +131,6 @@ motionThread.start()
 #Create message thread
 messageThread = MessageBoardThread(2, "messageThread", messageQueue)
 messageThread.start()
+time.sleep(1)
 
 ws.run_forever()
