@@ -70,7 +70,7 @@ def printMessages(messageQueue):
 			except Exception:
 				pass
 				
-			if m['_type'] != 'ALERT'
+			if m['_type'] != 'ALERT':
 				messageQueue.put(m)
 		
 		#Prepare to break from queue
